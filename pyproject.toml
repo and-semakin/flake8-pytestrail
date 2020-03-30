@@ -40,7 +40,7 @@ classifiers = [
 ]
 
 [tool.poetry.plugins."flake8.extension"]
-TR = "plugin:PyTestRailChecker"
+TR = "flake8_pytestrail:PyTestRailChecker"
 
 [tool.poetry.dependencies]
 python = "^3.6"
