@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "flake8-pytestrail"
+version = "0.1.0"
+description = ""
+authors = ["Andrey Semakin <and-semakin@ya.ru>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.6"
+flake8 = ">=3.0.0"
+attrs = ">=19.2.0"
+
+[tool.poetry.dev-dependencies]
+black = "^19.10b0"
+isort = "^4.3.21"
+pytest = "^5.4.1"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
