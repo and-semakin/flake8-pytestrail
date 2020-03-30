@@ -1,7 +1,7 @@
 import ast
 import re
-from collections import namedtuple
 from functools import partial
+from typing import Any, Iterable, Iterator, NamedTuple, Tuple, cast
 
 import attr
 import pycodestyle
@@ -12,7 +12,10 @@ TEST_CASE_PATTERN = r"^C\d+$"
 EXPECTED_DECORATORS = {"pytestrail.case", "testrail"}
 
 
-__version__ = "0.1.0"
+__version__ = "0.1.1a"
+
+
+Flake8Error = Tuple[int, int, str, Any]
 
 
 @attr.s(hash=False)
@@ -25,7 +28,7 @@ class PyTestRailChecker:
     lines = attr.ib(default=None)
     visitor = attr.ib(init=False, default=attr.Factory(lambda: PyTestRailVisitor))
 
-    def run(self):
+    def run(self) -> Iterator[Flake8Error]:
         if not re.search(TEST_FILE_PATTERN, self.filename):
             return
 
@@ -40,11 +43,11 @@ class PyTestRailChecker:
             yield self.adapt_error(e)
 
     @classmethod
-    def adapt_error(cls, e):
+    def adapt_error(cls, e: "ExtendedError") -> Flake8Error:
         """Adapts the extended error namedtuple to be compatible with Flake8."""
         return e._replace(message=e.message.format(*e.vars))[:4]
 
-    def load_file(self):
+    def load_file(self) -> None:
         """Loads the file in a way that auto-detects source encoding and deals
         with broken terminal encodings for stdin.
 
@@ -61,7 +64,7 @@ class PyTestRailChecker:
             self.tree = ast.parse("".join(self.lines))
 
 
-def _to_name_str(node):
+def _to_name_str(node: ast.AST) -> str:
     # Turn Name and Attribute nodes to strings, e.g "ValueError" or
     # "pkg.mod.error", handling any depth of attribute accesses.
     if isinstance(node, ast.Name):
@@ -79,25 +82,17 @@ class PyTestRailVisitor(ast.NodeVisitor):
     errors = attr.ib(default=attr.Factory(list))
     futures = attr.ib(default=attr.Factory(set))
 
-    NODE_WINDOW_SIZE = 4
-
-    def visit(self, node):
-        self.node_stack.append(node)
-        self.node_window.append(node)
-        self.node_window = self.node_window[-self.NODE_WINDOW_SIZE :]
-        super().visit(node)
-        self.node_stack.pop()
-
-    def visit_FunctionDef(self, node):
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        # if function is not a test, skip it
         if re.match(TEST_FUNCTION_PATTERN, node.name):
             pytestrail_decorators = [
                 dec
-                for dec in node.decorator_list
+                for dec in cast(Iterable[ast.Call], node.decorator_list)
                 if _to_name_str(dec.func) in EXPECTED_DECORATORS
             ]
             if not pytestrail_decorators:
                 self.errors.append(TR001(node.lineno, node.col_offset))
-            elif len(pytestrail_decorators) != 1:
+            elif len(pytestrail_decorators) > 1:
                 self.errors.append(TR002(node.lineno, node.col_offset))
             else:
                 dec = pytestrail_decorators[0]
@@ -107,15 +102,26 @@ class PyTestRailVisitor(ast.NodeVisitor):
                         or not isinstance(arg.value, str)
                         or not re.match(TEST_CASE_PATTERN, arg.value)
                     ):
-                        self.errors.append(TR003(node.lineno, node.col_offset))
+                        self.errors.append(
+                            TR003(
+                                node.lineno, node.col_offset, vars=(TEST_CASE_PATTERN,)
+                            )
+                        )
 
         self.generic_visit(node)
 
 
-error = namedtuple("error", "lineno col message type vars")
-Error = partial(partial, error, type=PyTestRailChecker, vars=())
+class ExtendedError(NamedTuple):
+    lineno: int
+    col: int
+    message: str
+    type: Any
+    vars: Tuple[Any, ...]
+
+
+Error = partial(partial, ExtendedError, type=PyTestRailChecker, vars=())
 
 
 TR001 = Error(message="TR001 Missing `@pytestrail.case()` decorator")
 TR002 = Error(message="TR002 Multiple `@pytestrail.case()` decorators")
-TR003 = Error(message=f'TR003 Test case ID should match "{TEST_CASE_PATTERN}" pattern')
+TR003 = Error(message='TR003 Test case ID should match "{0}" pattern')

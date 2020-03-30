@@ -4,7 +4,7 @@ build-backend = "poetry.masonry.api"
 
 [tool.poetry]
 name = "flake8-pytestrail"
-version = "0.1.0"
+version = "0.1.0a"
 description = "Flake8 plugin to check for missing or wrong TestRail test identifiers"
 authors = ["Andrey Semakin <and-semakin@ya.ru>"]
 license = "MIT"
