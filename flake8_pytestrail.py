@@ -96,17 +96,24 @@ class PyTestRailVisitor(ast.NodeVisitor):
                 self.errors.append(TR002(node.lineno, node.col_offset))
             else:
                 dec = pytestrail_decorators[0]
-                for arg in dec.args:
-                    if (
-                        not isinstance(arg, ast.Constant)
-                        or not isinstance(arg.value, str)
-                        or not re.match(TEST_CASE_PATTERN, arg.value)
-                    ):
-                        self.errors.append(
-                            TR003(
-                                node.lineno, node.col_offset, vars=(TEST_CASE_PATTERN,)
+                if dec.args:
+                    for arg in dec.args:
+                        if (
+                            not isinstance(arg, ast.Constant)
+                            or not isinstance(arg.value, str)
+                            or not re.match(TEST_CASE_PATTERN, arg.value)
+                        ):
+                            self.errors.append(
+                                TR003(
+                                    node.lineno,
+                                    node.col_offset,
+                                    vars=(TEST_CASE_PATTERN,),
+                                )
                             )
-                        )
+                else:
+                    self.errors.append(
+                        TR003(node.lineno, node.col_offset, vars=(TEST_CASE_PATTERN,))
+                    )
 
         self.generic_visit(node)
 
