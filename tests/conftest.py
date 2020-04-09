@@ -11,7 +11,7 @@ from flake8_pytestrail import PyTestRailChecker
 def checker(request) -> Iterator[PyTestRailChecker]:
     with tempfile.TemporaryDirectory() as d:
         sample_name = request.module.sample_name
-        source_file = Path("test/samples") / sample_name
+        source_file = Path("tests/samples") / sample_name
         test_file = Path(d) / f"test_{sample_name}"
 
         with source_file.open("r") as src:
