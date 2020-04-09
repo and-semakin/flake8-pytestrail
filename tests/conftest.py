@@ -7,10 +7,10 @@ import pytest
 from flake8_pytestrail import PyTestRailChecker
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def checker(request) -> Iterator[PyTestRailChecker]:
     with tempfile.TemporaryDirectory() as d:
-        sample_name = request.module.sample_name
+        sample_name = request.param
         source_file = Path("tests/samples") / sample_name
         test_file = Path(d) / f"test_{sample_name}"
 
