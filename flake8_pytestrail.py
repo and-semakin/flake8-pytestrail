@@ -98,10 +98,13 @@ class PyTestRailVisitor(ast.NodeVisitor):
                 dec = pytestrail_decorators[0]
                 if dec.args:
                     for arg in dec.args:
-                        if (
-                            not isinstance(arg, ast.Constant)
-                            or not isinstance(arg.value, str)
-                            or not re.match(TEST_CASE_PATTERN, arg.value)
+                        if not (
+                            isinstance(arg, ast.Constant)
+                            and isinstance(arg.value, str)
+                            and re.match(TEST_CASE_PATTERN, arg.value)
+                        ) and not (
+                            isinstance(arg, ast.Str)
+                            and re.match(TEST_CASE_PATTERN, arg.s)
                         ):
                             self.errors.append(
                                 TR003(
