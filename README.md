@@ -1,5 +1,10 @@
 # flake8-pytestrail
 
+[![Build Status](https://travis-ci.com/and-semakin/flake8-pytestrail.svg?branch=master)](https://travis-ci.com/and-semakin/flake8-pytestrail)
+[![PyPI](https://img.shields.io/pypi/v/flake8-pytestrail)](https://pypi.org/project/flake8-pytestrail/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/flake8-pytestrail)](https://pypi.org/project/flake8-pytestrail/)
+[![PyPI - License](https://img.shields.io/pypi/l/flake8-pytestrail)](https://pypi.org/project/flake8-pytestrail/)
+
 A companion Flake8 plugin for [pytest-testrail](https://github.com/allankp/pytest-testrail) package.
 
 ## Installation
