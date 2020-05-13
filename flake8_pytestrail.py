@@ -32,7 +32,7 @@ class PyTestRailChecker:
         if not re.search(TEST_FILE_PATTERN, self.filename):
             return
 
-        if not self.tree or not self.lines:
+        if not (self.tree and self.lines):
             self.load_file()
         visitor = self.visitor(filename=self.filename, lines=self.lines)
         visitor.visit(self.tree)
@@ -99,12 +99,15 @@ class PyTestRailVisitor(ast.NodeVisitor):
                 if dec.args:
                     for arg in dec.args:
                         if not (
-                            isinstance(arg, ast.Constant)
-                            and isinstance(arg.value, str)
-                            and re.match(TEST_CASE_PATTERN, arg.value)
-                        ) and not (
-                            isinstance(arg, ast.Str)
-                            and re.match(TEST_CASE_PATTERN, arg.s)
+                            (
+                                isinstance(arg, ast.Constant)
+                                and isinstance(arg.value, str)
+                                and re.match(TEST_CASE_PATTERN, arg.value)
+                            )
+                            or (
+                                isinstance(arg, ast.Str)
+                                and re.match(TEST_CASE_PATTERN, arg.s)
+                            )
                         ):
                             self.errors.append(
                                 TR003(
