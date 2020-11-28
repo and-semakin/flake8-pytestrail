@@ -12,7 +12,7 @@ TEST_CASE_PATTERN = r"^C\d+$"
 EXPECTED_DECORATORS = {"pytestrail.case", "testrail"}
 
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 
 Flake8Error = Tuple[int, int, str, Any]
